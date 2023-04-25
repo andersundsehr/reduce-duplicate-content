@@ -61,6 +61,29 @@ routeEnhancers:
       sitemap.xml: 1533906435
 ````
 
+## If you use staticfilecache you need to add these lines in the nginx config:
+
+````nginx
+    # Ensure we redirect to TYPO3 for non GET/HEAD requests
+    if ($request_method !~ ^(GET|HEAD)$ ) {
+        return 405;
+    }
+
+    # Ensure we redirect to TYPO3 for urls ending with slash ####### THIS
+    if ($request_uri ~ "^.*/$") {
+        return 405;
+    }
+
+    # Ensure we redirect to TYPO3 for urls ending without slash ####### OR THIS
+    if ($request_uri !~ "^.*/$") {
+        return 405;
+    }
+
+    charset utf-8;
+    default_type text/html;
+    try_files /typo3temp/tx_staticfilecache/https_${host}_443${uri}/index /typo3temp/tx_staticfilecache/${scheme}_${host}_${server_port}${uri}/index =405;
+````
+
 ## Change the 307 Status Code:
 
 You can change it in the Extension Settings.
