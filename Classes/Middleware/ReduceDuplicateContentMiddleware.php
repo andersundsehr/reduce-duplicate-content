@@ -9,6 +9,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\VisibilityAspect;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\Uri;
@@ -22,7 +25,7 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 
 class ReduceDuplicateContentMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly ExtensionConfiguration $extensionConfiguration)
+    public function __construct(private readonly ExtensionConfiguration $extensionConfiguration, private readonly PageRepository $pageRepository)
     {
     }
 
@@ -30,14 +33,14 @@ class ReduceDuplicateContentMiddleware implements MiddlewareInterface
     {
         $site = $request->getAttribute('site');
         $language = $request->getAttribute('language');
-        $page = $request->getAttribute('routing');
+        $pageArguments = $request->getAttribute('routing');
         $normalizedParams = $request->getAttribute('normalizedParams');
 
         if (!$language instanceof SiteLanguage) {
             return $handler->handle($request);
         }
 
-        if (!$page instanceof PageArguments) {
+        if (!$pageArguments instanceof PageArguments) {
             return $handler->handle($request);
         }
 
@@ -54,13 +57,25 @@ class ReduceDuplicateContentMiddleware implements MiddlewareInterface
         }
 
         //if page hase parameters other than type, language and id:
-        if (new PageArguments($page->getPageId(), $page->getPageType(), []) != $page) {
+        if (new PageArguments($pageArguments->getPageId(), $pageArguments->getPageType(), []) != $pageArguments) {
+            return $handler->handle($request);
+        }
+
+        // if page is in preview mode it can not be found in the pageRepository:
+        $page = $this->pageRepository->getPage($pageArguments->getPageId(), true);
+        if (!$page) {
             return $handler->handle($request);
         }
 
         try {
-            $parameter = [...$page->getQueryArguments(), 'type' => $page->getPageType(), '_language' => $language];
-            $canonicalUri = $site->getRouter()->generateUri($page->getPageId(), $parameter);
+            $parameter = array_filter(
+                [
+                    ...$pageArguments->getQueryArguments(),
+                    'type' => $pageArguments->getPageType(),
+                    '_language' => $language,
+                ]
+            );
+            $canonicalUri = $site->getRouter()->generateUri($page, $parameter);
         } catch (InvalidRouteArgumentsException) {
             return $handler->handle($request);
         }
