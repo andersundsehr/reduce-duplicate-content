@@ -84,6 +84,12 @@ routeEnhancers:
     try_files /typo3temp/tx_staticfilecache/https_${host}_443${uri}/index /typo3temp/tx_staticfilecache/${scheme}_${host}_${server_port}${uri}/index =405;
 ````
 
+## Important! If you use staticfilecache:
+
+If you use staticfilecache, you have to disable the fallback middleware of staticfilecache: 
+![image](https://github.com/andersundsehr/reduce-duplicate-content/assets/33542979/d054ea7b-8d16-4f07-b4cc-01a89be40d8e)
+
+
 ## Change the 307 Status Code:
 
 You can change it in the Extension Settings.
