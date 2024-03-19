@@ -23,7 +23,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 
-class ReduceDuplicateContentMiddleware implements MiddlewareInterface
+final class ReduceDuplicateContentMiddleware implements MiddlewareInterface
 {
     public function __construct(private readonly ExtensionConfiguration $extensionConfiguration, private readonly PageRepository $pageRepository)
     {
@@ -92,19 +92,5 @@ class ReduceDuplicateContentMiddleware implements MiddlewareInterface
     private function getStatusCode(): int
     {
         return (int)$this->extensionConfiguration->get('reduce_duplicate_content', 'statusCode');
-    }
-
-    protected function getUrlEnd(Site $site, Uri $uri): string
-    {
-        $routeEnhancers = $site->getConfiguration()['routeEnhancers'] ?? [];
-        foreach ($routeEnhancers as $enhancer) {
-            if ($enhancer['type'] !== 'PageType') {
-                continue;
-            }
-
-            return $enhancer['default'];
-        }
-
-        return '';
     }
 }

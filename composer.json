@@ -6,7 +6,7 @@
   ],
   "type": "typo3-cms-extension",
   "require": {
-    "php": "~8.1.0 || ~8.2.0",
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
     "typo3/cms-core": "^11.5.11 || ^12.0"
   },
   "require-dev": {
@@ -21,12 +21,12 @@
   },
   "config": {
     "allow-plugins": {
-      "typo3/cms-composer-installers": true,
-      "typo3/class-alias-loader": true,
+      "ergebnis/composer-normalize": true,
       "phpro/grumphp": true,
       "phpstan/extension-installer": true,
       "pluswerk/grumphp-config": true,
-      "ergebnis/composer-normalize": true
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
     }
   },
   "extra": {
