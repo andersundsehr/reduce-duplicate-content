@@ -59,7 +59,6 @@ jobs:
         run: ./vendor/bin/grumphp run --ansi
       - name: Run GrumPHP without blocking security checks
         if: matrix.security_check == false
-        run: >
-          ./vendor/bin/grumphp run
-          --ansi
-          --parameters='{"convention.security_checker_blocking":false}'
+        run: |
+          sed -i 's/convention.security_checker_blocking: true/convention.security_checker_blocking: false/' grumphp.yml
+          ./vendor/bin/grumphp run --ansi
