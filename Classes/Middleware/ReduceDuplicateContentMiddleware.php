@@ -36,6 +36,10 @@ final class ReduceDuplicateContentMiddleware implements MiddlewareInterface
         $pageArguments = $request->getAttribute('routing');
         $normalizedParams = $request->getAttribute('normalizedParams');
 
+        if ($this->hasBypassRequestAttribute($request)) {
+            return $handler->handle($request);
+        }
+
         if (!$language instanceof SiteLanguage) {
             return $handler->handle($request);
         }
@@ -52,7 +56,7 @@ final class ReduceDuplicateContentMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        if (!in_array($request->getMethod(), ['GET', 'HEAD'])) {
+        if (!in_array($request->getMethod(), ['GET', 'HEAD'], true)) {
             return $handler->handle($request);
         }
 
@@ -92,5 +96,21 @@ final class ReduceDuplicateContentMiddleware implements MiddlewareInterface
     private function getStatusCode(): int
     {
         return (int)$this->extensionConfiguration->get('reduce_duplicate_content', 'statusCode');
+    }
+
+    private function hasBypassRequestAttribute(ServerRequestInterface $request): bool
+    {
+        $configuredAttributes = (string)$this->extensionConfiguration->get(
+            'reduce_duplicate_content',
+            'bypassRequestAttributes'
+        );
+
+        foreach (GeneralUtility::trimExplode(',', $configuredAttributes, true) as $attributeName) {
+            if ($request->getAttribute($attributeName) === true) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

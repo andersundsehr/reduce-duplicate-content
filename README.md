@@ -94,10 +94,21 @@ If you use staticfilecache, you have to disable the fallback middleware of stati
 
 You can change it in the Extension Settings.
 
+## Bypass alternate representations:
+
+Requests marked by `b13/ai-bots-love-markdown` are excluded from canonical redirects by default. This keeps the Markdown URL as an intentional alternate representation of the canonical TYPO3 page URL.
+
+Additional integrations can configure `bypassRequestAttributes` as a comma-separated list of PSR-7 request attribute names. If any configured attribute has the exact value `true`, the canonical redirect is skipped for that request. Use this for alternate representations such as JSON:
+
+````php
+'reduce_duplicate_content' => [
+    'bypassRequestAttributes' => 'some-extension.alternate-representation',
+],
+````
+
 # with ♥️ from anders und sehr GmbH
 
 > If something did not work 😮  
 > or you appreciate this Extension 🥰 let us know.
 
 > We are hiring https://www.andersundsehr.com/karriere/
-

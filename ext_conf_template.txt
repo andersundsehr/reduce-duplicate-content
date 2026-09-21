@@ -1,2 +1,5 @@
 # cat=basic; type=int+; label=Status Code for redirect. Either 307 or 301
 statusCode = 307
+
+# cat=basic; type=string; label=Comma-separated request attributes that bypass canonical redirects
+bypassRequestAttributes = ai-bots-love-markdown.requested
