@@ -56,7 +56,7 @@ final class ReduceDuplicateContentMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        if (!in_array($request->getMethod(), ['GET', 'HEAD'])) {
+        if (!in_array($request->getMethod(), ['GET', 'HEAD'], true)) {
             return $handler->handle($request);
         }
 
