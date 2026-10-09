@@ -40,6 +40,8 @@ jobs:
           - php: '8.5'
             typo3: '13'
             security_check: true
+    env:
+      COMPOSER_AUTH: ${{ secrets.TYPO3_ELTS_COMPOSER_AUTH }}
     steps:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
@@ -71,6 +73,11 @@ jobs:
           --dev
           --sort-packages
           --with-all-dependencies
+      - name: Configure TYPO3 ELTS when an authorized test license is available
+        if: (matrix.typo3 == '11' || matrix.typo3 == '12') && vars.TYPO3_ELTS_REPOSITORY_URL != ''
+        env:
+          TYPO3_ELTS_REPOSITORY_URL: ${{ vars.TYPO3_ELTS_REPOSITORY_URL }}
+        run: composer config --global repositories.typo3-elts composer "$TYPO3_ELTS_REPOSITORY_URL"
       - run: composer install --no-interaction --no-progress
       - name: Run GrumPHP with security checks
         if: matrix.security_check == true
