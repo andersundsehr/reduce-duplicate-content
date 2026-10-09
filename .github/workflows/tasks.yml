@@ -12,53 +12,59 @@ jobs:
         include:
           - php: '8.1'
             typo3: '11'
-            security_check: false
           - php: '8.2'
             typo3: '11'
-            security_check: false
           - php: '8.2'
             typo3: '12'
-            security_check: false
           - php: '8.3'
             typo3: '12'
-            security_check: false
           - php: '8.2'
             typo3: '13'
-            security_check: true
           - php: '8.3'
             typo3: '13'
-            security_check: true
           - php: '8.4'
             typo3: '13'
-            security_check: true
+          - php: '8.5'
+            typo3: '11'
+          - php: '8.5'
+            typo3: '12'
+          - php: '8.5'
+            typo3: '13'
+    env:
+      COMPOSER_AUTH: ${{ secrets.TYPO3_ELTS_COMPOSER_AUTH }}
     steps:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
           key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.php }}-composer-
-      - name: Allow legacy TYPO3 dependencies
-        if: matrix.security_check == false
-        run: composer config audit.block-insecure false
+      - name: Configure TYPO3 ELTS when an authorized test license is available
+        if: (matrix.typo3 == '11' || matrix.typo3 == '12') && vars.TYPO3_ELTS_REPOSITORY_URL != ''
+        env:
+          TYPO3_ELTS_REPOSITORY_URL: ${{ vars.TYPO3_ELTS_REPOSITORY_URL }}
+        run: composer config --global repositories.typo3-elts composer "$TYPO3_ELTS_REPOSITORY_URL"
+      # CI-only aliases install the security-fixed 1.0.0 sanitizer with TYPO3's API.
+      - name: Select SVG sanitizer compatibility alias
+        run: |
+          if [ "${{ matrix.typo3 }}" = "11" ]; then
+            echo "SVG_ALIAS=0.18.99" >> "$GITHUB_ENV"
+          else
+            echo "SVG_ALIAS=0.22.99" >> "$GITHUB_ENV"
+          fi
       - run: >
           composer require
           typo3/cms-core="^${{ matrix.typo3 }}"
           typo3/minimal="^${{ matrix.typo3 }}"
+          "enshrined/svg-sanitize:1.0.0 as $SVG_ALIAS"
           --dev
+          --sort-packages
           --with-all-dependencies
-          --ignore-platform-req=php+
-      - run: composer install --no-interaction --no-progress --ignore-platform-req=php+
-      - name: Run GrumPHP with security checks
-        if: matrix.security_check == true
-        run: ./vendor/bin/grumphp run --ansi
-      - name: Run GrumPHP without blocking security checks
-        if: matrix.security_check == false
-        run: |
-          sed -i 's/convention.security_checker_blocking: true/convention.security_checker_blocking: false/' grumphp.yml
-          ./vendor/bin/grumphp run --ansi
+      - run: composer install --no-interaction --no-progress
+      - run: bash tests/typo3-svg-sanitizer.sh
+      - run: ./vendor/bin/grumphp run --ansi
