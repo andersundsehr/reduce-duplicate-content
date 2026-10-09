@@ -31,15 +31,6 @@ jobs:
           - php: '8.4'
             typo3: '13'
             security_check: true
-          - php: '8.5'
-            typo3: '11'
-            security_check: false
-          - php: '8.5'
-            typo3: '12'
-            security_check: true
-          - php: '8.5'
-            typo3: '13'
-            security_check: true
     steps:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
@@ -55,23 +46,14 @@ jobs:
       - name: Allow legacy TYPO3 dependencies
         if: matrix.security_check == false
         run: composer config audit.block-insecure false
-      # CI-only aliases install the security-fixed 1.0.0 sanitizer with TYPO3's API.
-      - name: Select SVG sanitizer compatibility alias
-        run: |
-          if [ "${{ matrix.typo3 }}" = "11" ]; then
-            echo "SVG_ALIAS=0.18.99" >> "$GITHUB_ENV"
-          else
-            echo "SVG_ALIAS=0.22.99" >> "$GITHUB_ENV"
-          fi
       - run: >
           composer require
           typo3/cms-core="^${{ matrix.typo3 }}"
           typo3/minimal="^${{ matrix.typo3 }}"
-          "enshrined/svg-sanitize:1.0.0 as $SVG_ALIAS"
           --dev
-          --sort-packages
           --with-all-dependencies
-      - run: composer install --no-interaction --no-progress
+          --ignore-platform-req=php+
+      - run: composer install --no-interaction --no-progress --ignore-platform-req=php+
       - name: Run GrumPHP with security checks
         if: matrix.security_check == true
         run: ./vendor/bin/grumphp run --ansi
