@@ -10,55 +10,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '8.1'
-            typo3: '11'
-            security_check: false
-          - php: '8.2'
-            typo3: '11'
-            security_check: false
-          - php: '8.2'
-            typo3: '12'
-            security_check: false
-          - php: '8.3'
-            typo3: '12'
-            security_check: false
           - php: '8.2'
             typo3: '13'
-            security_check: true
           - php: '8.3'
             typo3: '13'
-            security_check: true
           - php: '8.4'
             typo3: '13'
-            security_check: true
+          - php: '8.5'
+            typo3: '13'
     steps:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
           key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.php }}-composer-
-      - name: Allow legacy TYPO3 dependencies
-        if: matrix.security_check == false
-        run: composer config audit.block-insecure false
-      - run: >
-          composer require
-          typo3/cms-core="^${{ matrix.typo3 }}"
-          typo3/minimal="^${{ matrix.typo3 }}"
-          --dev
-          --with-all-dependencies
-          --ignore-platform-req=php+
-      - run: composer install --no-interaction --no-progress --ignore-platform-req=php+
-      - name: Run GrumPHP with security checks
-        if: matrix.security_check == true
-        run: ./vendor/bin/grumphp run --ansi
-      - name: Run GrumPHP without blocking security checks
-        if: matrix.security_check == false
-        run: |
-          sed -i 's/convention.security_checker_blocking: true/convention.security_checker_blocking: false/' grumphp.yml
-          ./vendor/bin/grumphp run --ansi
+      - run: composer require typo3/cms-core="^${{ matrix.typo3 }}" typo3/minimal="^${{ matrix.typo3 }}" "enshrined/svg-sanitize:~1.0.0" --dev --sort-packages --with-all-dependencies
+      - run: composer install --no-interaction --no-progress
+      - run: ./vendor/bin/grumphp run --ansi

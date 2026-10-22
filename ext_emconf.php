@@ -6,7 +6,7 @@ $EM_CONF[$_EXTKEY] = [
     'description' => 'redirect if page has a / at the end (or not). (reduce Duplicate Content)',
     'constraints' => [
         'depends' => [
-            'typo3' => '11.0.0-13.4.99',
+            'typo3' => '13.4.35-13.4.99',
         ],
     ],
     'autoload' => [
