@@ -4,6 +4,7 @@ grumphp:
   parallel:
     enabled: false
 parameters:
+  convention.fractor_enable: false
   convention.process_timeout: 240
   convention.security_checker_blocking: true
   convention.jsonlint_ignore_pattern: {  }
