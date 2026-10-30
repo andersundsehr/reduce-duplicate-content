@@ -23,9 +23,9 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 
-final class ReduceDuplicateContentMiddleware implements MiddlewareInterface
+final readonly class ReduceDuplicateContentMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly ExtensionConfiguration $extensionConfiguration, private readonly PageRepository $pageRepository)
+    public function __construct(private ExtensionConfiguration $extensionConfiguration, private PageRepository $pageRepository)
     {
     }
 
