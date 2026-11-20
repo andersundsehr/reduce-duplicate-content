@@ -18,10 +18,8 @@ jobs:
             typo3: '13'
           - php: '8.5'
             typo3: '13'
-          # phpro/grumphp does not allow PHP 8.6 yet
           - php: '8.6'
             typo3: '13'
-            ignorePlatformReqs: '--ignore-platform-req=php+'
     steps:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
@@ -34,8 +32,5 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.php }}-composer-
-      - run: composer require typo3/minimal="^${{ matrix.typo3 }}.4" --dev --with-all-dependencies --no-interaction --no-progress ${{ matrix.ignorePlatformReqs }}
-      # --ignore-platform-req=php+ may only skip the PHP check of dev dependencies (e.g. phpro/grumphp)
-      - if: matrix.php == '8.6'
-        run: composer check-platform-reqs --no-dev
+      - run: composer require typo3/minimal="^${{ matrix.typo3 }}.4" --dev --with-all-dependencies --no-interaction --no-progress
       - run: ./vendor/bin/grumphp run --ansi
